@@ -1,5 +1,6 @@
 ﻿using System;
 using InfinityScript;
+using RestSharp;
 
 namespace TeknoAntiVPN
 {
@@ -33,9 +34,15 @@ namespace TeknoAntiVPN
 
         bool isVPN(string ip)
         {
-            //http://check.getipintel.net/check.php?ip={ip}&format=json&contact=null@null.com&flags=m
+            var client = new RestClient("http://check.getipintel.net/");
 
-            return true;
+            var request = new RestRequest($"check.php?ip={ip}&format=json&contact=null@null.com&flags=m", DataFormat.Json);
+
+            var response = client.Get(request);
+
+            WriteLog.Info(response.Content);
+
+            return false;
         }
     }
 
