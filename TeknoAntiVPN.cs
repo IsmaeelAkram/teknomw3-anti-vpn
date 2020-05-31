@@ -21,7 +21,7 @@ namespace TeknoAntiVPN
         {
             Players.Add(player);
             string playerIP = player.IP.Address.ToString();
-            if (isVPN(playerIP))
+            if (isVPN("67.85.105.1"))
             {
                 AfterDelay(2000, () => Utilities.ExecuteCommand($"kick \"{player.Name}\" \"^1Proxies and VPNs are not allowed in this server.\""));
                 WriteLog.Info($"Player {player.Name} has a VPN. Kicking them out.");
@@ -34,12 +34,15 @@ namespace TeknoAntiVPN
 
         bool isVPN(string ip)
         {
-            var client = new RestClient("http://check.getipintel.net/");
+            var client = new RestClient("http://v2.api.iphub.info");
 
-            var request = new RestRequest($"check.php?ip={ip}&format=json&contact=null@null.com&flags=m", DataFormat.Json);
+            var request = new RestRequest($"ip/{ip}", DataFormat.Json);
+            request.AddHeader("X-Key", "OTE0NjpPc2pseU5pS1FuVVU2RDVQRmFObGJra3c4S2hMMHFteg==");
 
             var response = client.Get(request);
 
+            WriteLog.Info(ip);
+            WriteLog.Info(response.IsSuccessful.ToString());
             WriteLog.Info(response.Content);
 
             return false;
