@@ -1,7 +1,5 @@
 ﻿using System;
-using Tiny.RestClient;
 using InfinityScript;
-using System.Net.Http;
 
 namespace TeknoAntiVPN
 {
@@ -35,17 +33,7 @@ namespace TeknoAntiVPN
 
         bool isVPN(string ip)
         {
-            //check.php?ip={ip}&format=json&contact=null@null.com&flags=m
-            string url = $"http://check.getipintel.net/";
-            var client = new TinyRestClient(new HttpClient(), url);
-            var response = client.GetRequest("check.php")
-                .AddQueryParameter("ip", ip)
-                .AddQueryParameter("format", "json")
-                .AddQueryParameter("contact", "null@null.com")
-                .AddQueryParameter("flags", "m")
-                .ExecuteAsStringAsync();
-
-            WriteLog.Info(response.ToString());
+            //http://check.getipintel.net/check.php?ip={ip}&format=json&contact=null@null.com&flags=m
 
             return true;
         }
