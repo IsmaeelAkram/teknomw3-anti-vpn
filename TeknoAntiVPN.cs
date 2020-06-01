@@ -51,6 +51,16 @@ namespace TeknoAntiVPN
         {
             Players.Add(player);
 
+            playersInGame = System.IO.File.ReadAllLines(playersInGameTxt);
+            foreach (string playerInGame in playersInGame)
+            {
+                if (player.Name == playerInGame)
+                {
+                    WriteLog.Info($"{player.Name} has already been scanned...ignoring them.");
+                    return;
+                }
+            }
+
             WriteLog.Info($"Detecting if player {player.Name} has a VPN...");
             if (isVPN(player.IP.Address.ToString(), player))
             {
@@ -76,16 +86,7 @@ namespace TeknoAntiVPN
         }
 
         bool isVPN(string ip, Entity player)
-        {
-            playersInGame = System.IO.File.ReadAllLines(playersInGameTxt);
-            foreach (string playerInGame in playersInGame)
-            {
-                if (player.Name == playerInGame)
-                {
-                    WriteLog.Info($"{player.Name} has already been scanned...ignoring them.");
-                    return false;
-                }
-            }
+        { 
 
             ignoredPlayers = System.IO.File.ReadAllLines(ignoredPlayersTxt);
             foreach (string ignoredPlayer in ignoredPlayers) { 
