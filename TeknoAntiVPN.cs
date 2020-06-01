@@ -11,9 +11,11 @@ namespace TeknoAntiVPN
     {
         string apiKeyTxt = "scripts\\TeknoAntiVPN\\apikey.txt";
         string ignoredPlayersTxt = "scripts\\TeknoAntiVPN\\ignoredPlayers.txt";
+        string playersInGameTxt = "scripts\\TeknoAntiVPN\\playersInGame.txt";
 
         string API_KEY;
         string[] ignoredPlayers;
+        string[] playersInGame;
 
         public TeknoAntiVPN()
         {
@@ -23,6 +25,8 @@ namespace TeknoAntiVPN
         void OnServerStart()
         {
             PlayerConnected += OnPlayerConnected;
+            PlayerDisconnected += OnPlayerDisconnected;
+
             if (!System.IO.Directory.Exists("scripts\\TeknoAntiVPN")) System.IO.Directory.CreateDirectory("scripts\\TeknoAntiVPN");
             if (!System.IO.File.Exists(apiKeyTxt))
             {
@@ -34,6 +38,11 @@ namespace TeknoAntiVPN
                 WriteLog.Warning("Ignored Players file doesn't exist. Creating... ");
                 System.IO.File.Create(ignoredPlayersTxt);
             }
+            if (!System.IO.File.Exists(playersInGameTxt))
+            {
+                WriteLog.Warning("PlayersInGame file doesn't exist. Creating... ");
+                System.IO.File.Create(playersInGameTxt);
+            }
             WriteLog.Info("AntiVPN by Mahjestic successfully started.");
             API_KEY = System.IO.File.ReadAllText(apiKeyTxt);
         }
@@ -41,7 +50,6 @@ namespace TeknoAntiVPN
         public void OnPlayerConnected(Entity player)
         {
             Players.Add(player);
-            string playerIP = player.IP.Address.ToString();
 
             WriteLog.Info($"Detecting if player {player.Name} has a VPN...");
             if (isVPN(player.IP.Address.ToString(), player))
@@ -55,8 +63,30 @@ namespace TeknoAntiVPN
             }
         }
 
+        void addToPlayersInGame(Entity player)
+        {
+            WriteLog.Info($"Adding {player.Name} to playersInGame.txt...");
+            System.IO.File.AppendAllText(playersInGameTxt, player.Name + "\n");
+        }
+        void removeFromPlayersInGame(Entity player)
+        {
+            WriteLog.Info($"Removing {player.Name} from playersInGame.txt...");
+            string playersInGame_ = System.IO.File.ReadAllText(playersInGameTxt);
+            System.IO.File.WriteAllText(playersInGameTxt, playersInGame_.Replace($"{player.Name}\n", ""));
+        }
+
         bool isVPN(string ip, Entity player)
         {
+            playersInGame = System.IO.File.ReadAllLines(playersInGameTxt);
+            foreach (string playerInGame in playersInGame)
+            {
+                if (player.Name == playerInGame)
+                {
+                    WriteLog.Info($"{player.Name} has already been scanned...ignoring them.");
+                    return false;
+                }
+            }
+
             ignoredPlayers = System.IO.File.ReadAllLines(ignoredPlayersTxt);
             foreach (string ignoredPlayer in ignoredPlayers) { 
                 if (player.Name == ignoredPlayer)
@@ -74,14 +104,20 @@ namespace TeknoAntiVPN
 
             Dictionary<string, object> result = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Result);
 
-            if(result["block"].ToString() == "0")
-            {
-                return false;
-            }
-            else
+            if(result["block"].ToString() == "1")
             {
                 return true;
             }
+            else
+            {
+                addToPlayersInGame(player);
+                return false;
+            }
+        }
+
+        public void OnPlayerDisconnected(Entity player)
+        {
+            removeFromPlayersInGame(player);
         }
     }
 
