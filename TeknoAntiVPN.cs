@@ -2,11 +2,19 @@
 using InfinityScript;
 using Tiny.RestClient;
 using System.Net.Http;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace TeknoAntiVPN
 {
     public class TeknoAntiVPN : BaseScript
     {
+        string apiKeyTxt = "scripts\\TeknoAntiVPN\\apikey.txt";
+        string ignoredPlayersTxt = "scripts\\TeknoAntiVPN\\ignoredPlayers.txt";
+
+        string API_KEY;
+        string[] ignoredPlayers;
+
         public TeknoAntiVPN()
         {
             OnServerStart();
@@ -15,17 +23,31 @@ namespace TeknoAntiVPN
         void OnServerStart()
         {
             PlayerConnected += OnPlayerConnected;
+            if (!System.IO.Directory.Exists("scripts\\TeknoAntiVPN")) System.IO.Directory.CreateDirectory("scripts\\TeknoAntiVPN");
+            if (!System.IO.File.Exists(apiKeyTxt))
+            {
+                WriteLog.Warning("Api key file doesn't exist. Creating... Please fill this out and restart the server");
+                System.IO.File.Create(apiKeyTxt);
+            }
+            if (!System.IO.File.Exists(ignoredPlayersTxt))
+            {
+                WriteLog.Warning("Ignored Players file doesn't exist. Creating... ");
+                System.IO.File.Create(ignoredPlayersTxt);
+            }
             WriteLog.Info("AntiVPN by Mahjestic successfully started.");
+            API_KEY = System.IO.File.ReadAllText(apiKeyTxt);
         }
 
         public void OnPlayerConnected(Entity player)
         {
             Players.Add(player);
             string playerIP = player.IP.Address.ToString();
-            if (isVPN("67.85.105.1"))
+
+            WriteLog.Info($"Detecting if player {player.Name} has a VPN...");
+            if (isVPN(player.IP.Address.ToString(), player))
             {
                 AfterDelay(2000, () => Utilities.ExecuteCommand($"kick \"{player.Name}\" \"^1Proxies and VPNs are not allowed in this server.\""));
-                WriteLog.Info($"Player {player.Name} has a VPN. Kicking them out.");
+                WriteLog.Warning($"Player {player.Name} has a VPN. Kicking them out.");
             }
             else
             {
@@ -33,19 +55,33 @@ namespace TeknoAntiVPN
             }
         }
 
-        bool isVPN(string ip)
+        bool isVPN(string ip, Entity player)
         {
-            //http://v2.api.iphub.info/ip/{ip}
-            //"X-Key", "OTE0NjpPc2pseU5pS1FuVVU2RDVQRmFObGJra3c4S2hMMHFteg=="
+            ignoredPlayers = System.IO.File.ReadAllLines(ignoredPlayersTxt);
+            foreach (string ignoredPlayer in ignoredPlayers) { 
+                if (player.Name == ignoredPlayer)
+                {
+                    WriteLog.Info($"{player.Name} has a VPN but they have been ignored.");
+                    return false;
+                }
+            }
 
             var client = new TinyRestClient(new HttpClient(), "http://v2.api.iphub.info");
 
             var response = client.GetRequest($"ip/{ip}")
+                .AddHeader("X-Key", API_KEY)
                 .ExecuteAsStringAsync();
 
-            WriteLog.Info(response.Result);
+            Dictionary<string, object> result = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Result);
 
-            return false;
+            if(result["block"].ToString() == "0")
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 
