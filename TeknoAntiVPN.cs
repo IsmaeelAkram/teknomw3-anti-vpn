@@ -49,7 +49,6 @@ namespace TeknoAntiVPN
 
         public void OnPlayerConnected(Entity player)
         {
-            Players.Add(player);
 
             playersInGame = System.IO.File.ReadAllLines(playersInGameTxt);
             foreach (string playerInGame in playersInGame)
