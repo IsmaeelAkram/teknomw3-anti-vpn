@@ -1,6 +1,7 @@
 ﻿using System;
 using InfinityScript;
-using RestSharp;
+using Tiny.RestClient;
+using System.Net.Http;
 
 namespace TeknoAntiVPN
 {
@@ -34,16 +35,10 @@ namespace TeknoAntiVPN
 
         bool isVPN(string ip)
         {
-            var client = new RestClient("http://v2.api.iphub.info");
+            //http://v2.api.iphub.info/ip/{ip}
+            //"X-Key", "OTE0NjpPc2pseU5pS1FuVVU2RDVQRmFObGJra3c4S2hMMHFteg=="
 
-            var request = new RestRequest($"ip/{ip}", DataFormat.Json);
-            request.AddHeader("X-Key", "OTE0NjpPc2pseU5pS1FuVVU2RDVQRmFObGJra3c4S2hMMHFteg==");
-
-            var response = client.Get(request);
-
-            WriteLog.Info(ip);
-            WriteLog.Info(response.IsSuccessful.ToString());
-            WriteLog.Info(response.Content);
+            var client = new TinyRestClient(new HttpClient(), "http://v2.api.iphub.info");
 
             return false;
         }
