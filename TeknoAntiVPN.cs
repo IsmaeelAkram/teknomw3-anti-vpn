@@ -76,13 +76,13 @@ namespace TeknoAntiVPN
         void addToPlayersInGame(Entity player)
         {
             WriteLog.Info($"Adding {player.Name} to playersInGame.txt...");
-            System.IO.File.AppendAllText(playersInGameTxt, player.Name + "\n");
+            System.IO.File.AppendAllText(playersInGameTxt, "\n" + player.Name);
         }
         void removeFromPlayersInGame(Entity player)
         {
             WriteLog.Info($"Removing {player.Name} from playersInGame.txt...");
             string playersInGame_ = System.IO.File.ReadAllText(playersInGameTxt);
-            System.IO.File.WriteAllText(playersInGameTxt, playersInGame_.Replace($"{player.Name}\n", ""));
+            System.IO.File.WriteAllText(playersInGameTxt, playersInGame_.Replace($"\n{player.Name}", ""));
         }
 
         bool isVPN(string ip, Entity player)
