@@ -40,6 +40,11 @@ namespace TeknoAntiVPN
 
             var client = new TinyRestClient(new HttpClient(), "http://v2.api.iphub.info");
 
+            var response = client.GetRequest($"ip/{ip}")
+                .ExecuteAsStringAsync();
+
+            WriteLog.Info(response.Result);
+
             return false;
         }
     }
