@@ -63,7 +63,7 @@ namespace TeknoAntiVPN
             WriteLog.Info($"Detecting if player {player.Name} has a VPN...");
             if (isVPN(player.IP.Address.ToString(), player))
             {
-                AfterDelay(2000, () => Utilities.ExecuteCommand($"kick \"{player.Name}\" \"^1Proxies and VPNs are not allowed in this server.\""));
+                Utilities.ExecuteCommand($"kickclient {player.GetEntityNumber()} \"^1Proxies and VPNs are not allowed in this server.\"");
                 WriteLog.Warning($"Player {player.Name} has a VPN. Kicking them out.");
             }
             else
